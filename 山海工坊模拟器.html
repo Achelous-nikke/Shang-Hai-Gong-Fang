@@ -1,0 +1,1666 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>🏮 山海工坊</title>
+    <style>
+        /* ===== 完全保留原UI ===== */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+        body {
+            font-family: 'KaiTi', '华文楷体', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background: #f2ede4;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 12px;
+        }
+        .container {
+            max-width: 400px;
+            width: 100%;
+            background: rgba(250, 246, 238, 0.9);
+            border-radius: 32px;
+            padding: 18px 16px 22px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+            border: 1px solid #dcd0bd;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #ddd0c0;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+        .title {
+            font-size: 22px;
+            font-weight: 700;
+            color: #4a3a2a;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .title .sub {
+            font-size: 12px;
+            font-weight: 400;
+            color: #a0907a;
+        }
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .stat-item {
+            background: rgba(235, 225, 210, 0.6);
+            border-radius: 30px;
+            padding: 2px 12px 2px 8px;
+            font-size: 14px;
+            color: #4a3a2a;
+            border: 1px solid #d4c8b8;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .stat-item .label {
+            font-size: 11px;
+            color: #8a7a6a;
+        }
+        .stat-item .value {
+            font-weight: 700;
+            font-size: 16px;
+            color: #8a7a4a;
+        }
+        .btn-icon {
+            background: rgba(200, 180, 150, 0.25);
+            border: 1px solid #d4c8b8;
+            border-radius: 30px;
+            padding: 2px 12px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: 0.2s;
+            font-family: inherit;
+        }
+        .btn-icon:active {
+            transform: scale(0.94);
+        }
+
+        /* ===== 六边形容器 ===== */
+        .hex-container {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            margin: 10px 0 16px;
+        }
+
+        .slot {
+            position: absolute;
+            width: 22%;
+            aspect-ratio: 1 / 1;
+            border-radius: 50%;
+            background: #f7f2e8;
+            border: 2px solid #d4c8b8;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            color: #b0a090;
+            transition: 0.2s;
+            cursor: default;
+            box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.03);
+            transform: translate(-50%, -50%);
+            will-change: left, top;
+            z-index: 2;
+            left: 50%;
+            top: 50%;
+        }
+        .slot.empty {
+            border-style: dashed;
+            cursor: pointer;
+        }
+        .slot.empty:active {
+            transform: translate(-50%, -50%) scale(0.94);
+        }
+        .slot.filled {
+            border-color: #b09070;
+            background: #f5eee4;
+            cursor: pointer;
+            color: #4a3a2a;
+        }
+        .slot.filled:active {
+            transform: translate(-50%, -50%) scale(0.94);
+        }
+        .slot .slot-icon {
+            font-size: 30px;
+            line-height: 1;
+        }
+        .slot .slot-name {
+            font-size: 10px;
+            margin-top: 2px;
+            color: #5a4a3a;
+        }
+
+        .carousel {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 5;
+            pointer-events: none;
+            text-align: center;
+            width: 60%;
+            background: transparent;
+            border: none;
+            padding: 4px 2px;
+            backdrop-filter: none;
+            border-radius: 0;
+            box-shadow: none;
+            transition: opacity 0.3s, transform 0.3s;
+        }
+        .carousel .gift-emoji {
+            font-size: 44px;
+            line-height: 1.2;
+            display: block;
+            text-shadow: 0 0 16px rgba(250, 246, 238, 0.9), 0 0 4px rgba(250, 246, 238, 0.8);
+        }
+        .carousel .gift-name {
+            font-size: 18px;
+            font-weight: 700;
+            color: #5a4a3a;
+            margin-top: 2px;
+            text-shadow: 0 0 12px rgba(250, 246, 238, 0.95), 0 0 4px rgba(250, 246, 238, 0.9);
+        }
+        .carousel .gift-value {
+            font-size: 14px;
+            color: #8a7a4a;
+            margin-top: 2px;
+            text-shadow: 0 0 12px rgba(250, 246, 238, 0.95), 0 0 4px rgba(250, 246, 238, 0.9);
+        }
+        .carousel.fade-out {
+            opacity: 0;
+            transform: translate(-50%, -50%) scale(0.92);
+        }
+        .carousel.fade-in {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin: 8px 0 12px;
+        }
+        .btn {
+            padding: 10px 18px;
+            border: none;
+            border-radius: 40px;
+            font-size: 15px;
+            font-weight: 600;
+            background: #f0e8dc;
+            border: 1px solid #d4c8b8;
+            cursor: pointer;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-family: inherit;
+            flex: 1 1 auto;
+            justify-content: center;
+            min-width: 80px;
+            color: #3a2a1a;
+        }
+        .btn:active {
+            transform: scale(0.94);
+        }
+        .btn-primary {
+            background: #d4c0aa;
+        }
+        .btn-success {
+            background: #b8c4a8;
+        }
+        .btn-gold {
+            background: #dcc8a0;
+        }
+        .btn-synth {
+            display: none;
+        }
+        .btn-synth.active {
+            display: flex;
+        }
+
+        .log-area {
+            background: rgba(240, 234, 224, 0.5);
+            border-radius: 16px;
+            padding: 6px 14px;
+            min-height: 34px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            color: #5a4a3a;
+            border: 1px solid #d4c8b8;
+            margin-top: 4px;
+        }
+        .log-area .log-emoji {
+            font-size: 18px;
+        }
+        .log-area .log-msg {
+            flex: 1;
+        }
+
+        /* 弹窗、历史、充值、动画样式保持不变 */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(50, 40, 30, 0.5);
+            backdrop-filter: blur(4px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 999;
+        }
+        .modal-overlay.active {
+            display: flex;
+        }
+        .modal-box {
+            background: #f9f4ec;
+            border: 1px solid #d4c8b8;
+            border-radius: 32px;
+            padding: 24px 28px 20px;
+            max-width: 360px;
+            width: 92%;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        .modal-box .modal-icon {
+            font-size: 48px;
+        }
+        .modal-box .modal-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #4a3a2a;
+            margin-bottom: 6px;
+        }
+        .modal-box .modal-desc {
+            font-size: 15px;
+            color: #7a6a5a;
+            line-height: 1.5;
+        }
+        .modal-box .modal-cost {
+            font-size: 22px;
+            font-weight: 700;
+            color: #8a7a4a;
+            margin: 8px 0 12px;
+            background: rgba(200, 180, 150, 0.15);
+            padding: 4px 16px;
+            border-radius: 20px;
+            display: inline-block;
+        }
+        .modal-box .modal-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            margin-top: 12px;
+            flex-wrap: wrap;
+        }
+        .modal-box .modal-actions .btn {
+            min-width: 60px;
+            padding: 8px 18px;
+            font-size: 14px;
+        }
+        .modal-box .gift-display {
+            padding: 10px 0;
+        }
+        .modal-box .gift-display .big-emoji {
+            font-size: 72px;
+            animation: bounce 0.6s ease;
+        }
+        @keyframes bounce {
+            0% {
+                transform: scale(0.2);
+                opacity: 0;
+            }
+            50% {
+                transform: scale(1.3);
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+        .modal-box .gift-display .gift-name {
+            font-size: 22px;
+            font-weight: 700;
+            color: #4a3a2a;
+        }
+        .modal-box .gift-display .gift-value {
+            font-size: 18px;
+            color: #8a7a4a;
+        }
+        .modal-box .gift-display .gift-profit {
+            font-size: 16px;
+            margin-top: 6px;
+            font-weight: 600;
+        }
+        .modal-box .gift-display .gift-profit.profit {
+            color: #4a7a5a;
+        }
+        .modal-box .gift-display .gift-profit.loss {
+            color: #b06050;
+        }
+        .modal-box .gift-display .gift-profit.equal {
+            color: #8a8a7a;
+        }
+
+        .history-list {
+            text-align: left;
+            margin: 8px 0;
+            max-height: 260px;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+        .history-list::-webkit-scrollbar {
+            width: 4px;
+        }
+        .history-list::-webkit-scrollbar-track {
+            background: rgba(200, 180, 160, 0.15);
+            border-radius: 4px;
+        }
+        .history-list::-webkit-scrollbar-thumb {
+            background: #c8b8a8;
+            border-radius: 4px;
+        }
+        .history-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+            border-bottom: 1px solid #ddd0c0;
+            font-size: 13px;
+            flex-wrap: wrap;
+            gap: 4px;
+        }
+        .history-item .h-time {
+            color: #a0907a;
+            font-size: 11px;
+            min-width: 70px;
+        }
+        .history-item .h-gift {
+            font-weight: 600;
+            flex: 1;
+        }
+        .history-item .h-value {
+            color: #8a7a4a;
+        }
+        .history-item .h-cost {
+            color: #a0907a;
+            font-size: 12px;
+        }
+        .history-item .h-profit {
+            font-weight: 600;
+            min-width: 50px;
+            text-align: right;
+        }
+        .history-item .h-profit.profit {
+            color: #4a7a5a;
+        }
+        .history-item .h-profit.loss {
+            color: #b06050;
+        }
+        .history-item .h-profit.equal {
+            color: #8a8a7a;
+        }
+        .history-empty {
+            color: #b0a090;
+            padding: 16px 0;
+            text-align: center;
+        }
+
+        .recharge-item {
+            background: rgba(235, 225, 212, 0.3);
+            border-radius: 20px;
+            padding: 12px;
+            border: 1px solid #d4c8b8;
+            margin-bottom: 12px;
+        }
+        .recharge-item .item-header {
+            display: flex;
+            justify-content: space-between;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+        .recharge-item .input-row {
+            display: flex;
+            gap: 8px;
+        }
+        .recharge-item .input-row input {
+            flex: 1;
+            padding: 6px 12px;
+            border-radius: 30px;
+            border: 1px solid #d4c8b8;
+            font-size: 14px;
+            font-family: inherit;
+            background: rgba(255, 250, 240, 0.6);
+            outline: none;
+        }
+        .recharge-item .input-row input:focus {
+            border-color: #b09070;
+        }
+        .recharge-item .input-row .btn-confirm-recharge {
+            padding: 6px 16px;
+            border-radius: 30px;
+            border: none;
+            background: #d4c0aa;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            border: 1px solid #b8a088;
+        }
+        .recharge-item .hint {
+            font-size: 11px;
+            color: #a0907a;
+            margin-top: 4px;
+            text-align: left;
+        }
+        .recharge-close-btn {
+            background: transparent;
+            border: none;
+            color: #8a7a6a;
+            font-size: 13px;
+            cursor: pointer;
+            padding: 4px 12px;
+        }
+
+        .egg-row {
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid rgba(200, 180, 160, 0.2);
+        }
+        .egg-row .input-row {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        .egg-row .input-row input {
+            flex: 1;
+            padding: 6px 12px;
+            border-radius: 30px;
+            border: 1px solid #d4c8b8;
+            font-size: 14px;
+            font-family: inherit;
+            background: rgba(255, 250, 240, 0.6);
+            outline: none;
+        }
+        .egg-row .input-row input:focus {
+            border-color: #b09070;
+        }
+        .egg-row .input-row .btn-egg {
+            padding: 6px 16px;
+            border-radius: 30px;
+            border: none;
+            background: #d4c0aa;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            border: 1px solid #b8a088;
+            font-family: inherit;
+            min-width: 44px;
+        }
+        .egg-row .input-row .btn-egg:active {
+            transform: scale(0.94);
+        }
+
+        .merge-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1000;
+            display: none;
+            justify-content: center;
+            align-items: center;
+        }
+        .merge-overlay.active {
+            display: flex;
+        }
+        .merge-particle {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            font-size: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 250, 240, 0.92);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            transition: all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+            opacity: 1;
+            z-index: 1001;
+        }
+        .merge-particle.fly {
+            transform: translate(var(--tx), var(--ty)) scale(1.8);
+            opacity: 0;
+        }
+        .merge-burst {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(255, 215, 0, 0.6) 0%, rgba(255, 200, 100, 0.2) 50%, transparent 70%);
+            pointer-events: none;
+            z-index: 1002;
+            transition: none;
+        }
+        .merge-burst.active {
+            animation: burstPulse 0.8s ease forwards;
+        }
+        @keyframes burstPulse {
+            0% {
+                transform: translate(-50%, -50%) scale(0);
+                opacity: 1;
+            }
+            50% {
+                transform: translate(-50%, -50%) scale(2.5);
+                opacity: 0.8;
+            }
+            100% {
+                transform: translate(-50%, -50%) scale(3.5);
+                opacity: 0;
+            }
+        }
+        .confetti-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1003;
+            overflow: hidden;
+        }
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            border-radius: 2px;
+            animation: confettiFall linear forwards;
+        }
+        @keyframes confettiFall {
+            0% {
+                transform: translateY(-20px) rotate(0deg) scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(calc(100vh + 50px)) rotate(720deg) scale(0.3);
+                opacity: 0;
+            }
+        }
+        #fireworksCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1004;
+            display: none;
+        }
+        #fireworksCanvas.active {
+            display: block;
+        }
+
+        @media (max-width: 420px) {
+            .container {
+                padding: 14px 10px;
+            }
+            .title {
+                font-size: 18px;
+            }
+            .slot .slot-icon {
+                font-size: 24px;
+            }
+            .slot .slot-name {
+                font-size: 8px;
+            }
+            .btn {
+                font-size: 13px;
+                padding: 8px 12px;
+                min-width: 60px;
+            }
+            .carousel .gift-emoji {
+                font-size: 34px;
+            }
+            .carousel .gift-name {
+                font-size: 15px;
+            }
+            .carousel .gift-value {
+                font-size: 12px;
+            }
+        }
+        @media (max-width: 360px) {
+            .slot .slot-icon {
+                font-size: 18px;
+            }
+            .btn {
+                font-size: 11px;
+                padding: 6px 8px;
+                min-width: 50px;
+            }
+            .carousel .gift-emoji {
+                font-size: 28px;
+            }
+            .carousel .gift-name {
+                font-size: 13px;
+            }
+            .carousel .gift-value {
+                font-size: 11px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="title">🏮 山海工坊 <span class="sub">· 炼化</span></div>
+            <div class="header-actions">
+                <div class="stat-item"><span>🔋</span><span class="label">电池</span><span class="value" id="batteryDisplay">900</span></div>
+                <button class="btn-icon" id="btnRechargeOpen">✦ 充值</button>
+                <button class="btn-icon" id="btnHistoryOpen">📜 历史</button>
+            </div>
+        </div>
+        <div class="hex-container" id="hexContainer">
+            <div class="carousel" id="carousel">
+                <span class="gift-emoji" id="giftEmoji">🌊</span>
+                <div class="gift-name" id="giftName">浪花一现</div>
+                <div class="gift-value" id="giftValue">50 电池</div>
+            </div>
+        </div>
+        <div class="actions">
+            <button class="btn btn-primary" id="btnDrawOne">🎲 召唤一个</button>
+            <button class="btn btn-success" id="btnDrawSix">🌟 召唤六个</button>
+            <button class="btn btn-gold btn-synth" id="btnSynth">✨ 合成</button>
+        </div>
+        <div class="log-area" id="logArea">
+            <span class="log-emoji">📜</span>
+            <span class="log-msg" id="logMsg">点击「召唤」或槽位开始炼化</span>
+        </div>
+    </div>
+
+    <div class="merge-overlay" id="mergeOverlay"><div class="merge-burst" id="mergeBurst"></div></div>
+    <div class="confetti-container" id="confettiContainer"></div>
+    <canvas id="fireworksCanvas"></canvas>
+
+    <!-- 弹窗 -->
+    <div class="modal-overlay" id="summonModal">
+        <div class="modal-box">
+            <div class="modal-icon">🌱</div>
+            <div class="modal-title">确认召唤</div>
+            <div class="modal-desc" id="summonDesc">在此槽位召唤随机素材，消耗 <strong>30 电池</strong></div>
+            <div class="modal-actions">
+                <button class="btn" id="summonCancel" style="background:transparent;border:1px solid #d4c8b8;">取消</button>
+                <button class="btn btn-gold" id="summonConfirm" style="background:#dcc8a0;border-color:#c8b088;">确认</button>
+            </div>
+        </div>
+    </div>
+    <div class="modal-overlay" id="replaceModal">
+        <div class="modal-box">
+            <div class="modal-icon">🔄</div>
+            <div class="modal-title">替换素材</div>
+            <div class="modal-desc">将 <strong id="replaceSlotName">—</strong> 替换为新的随机素材</div>
+            <div class="modal-cost" id="replaceCostDisplay">—</div>
+            <div class="modal-actions">
+                <button class="btn" id="replaceCancel" style="background:transparent;border:1px solid #d4c8b8;">取消</button>
+                <button class="btn btn-gold" id="replaceConfirm" style="background:#dcc8a0;border-color:#c8b088;">确认</button>
+            </div>
+        </div>
+    </div>
+    <div class="modal-overlay" id="synthConfirmModal">
+        <div class="modal-box">
+            <div class="modal-icon">✨</div>
+            <div class="modal-title">确认合成</div>
+            <div class="gift-display">
+                <div class="big-emoji" id="synthPreviewEmoji">🏮</div>
+                <div class="gift-name" id="synthPreviewName">浪花一现</div>
+                <div class="gift-value" id="synthPreviewValue">+50 电池</div>
+                <div class="gift-profit" id="synthPreviewProfit">⚖️ 盈亏：+0</div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn" id="synthConfirmCancel" style="background:transparent;border:1px solid #d4c8b8;">取消</button>
+                <button class="btn btn-gold" id="synthConfirmOk" style="background:#dcc8a0;border-color:#c8b088;">确认合成</button>
+            </div>
+        </div>
+    </div>
+    <div class="modal-overlay" id="resultModal">
+        <div class="modal-box">
+            <div class="gift-display">
+                <div class="big-emoji" id="resultEmoji">🏮</div>
+                <div class="gift-name" id="resultName">浪花一现</div>
+                <div class="gift-value" id="resultValue">+50 电池（已送出）</div>
+                <div class="gift-profit" id="resultProfit">⚖️ 盈亏：+0</div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-gold" id="resultClose" style="background:#dcc8a0;border-color:#c8b088;">太棒了！</button>
+            </div>
+        </div>
+    </div>
+    <div class="modal-overlay" id="historyModal">
+        <div class="modal-box" style="max-width:400px;">
+            <div class="modal-icon">📜</div>
+            <div class="modal-title">合成历史</div>
+            <div class="history-list" id="historyList"><div class="history-empty">暂无记录</div></div>
+            <div class="modal-actions">
+                <button class="btn" id="historyClear" style="background:#dbb8b0;border-color:#c8a098;">清空</button>
+                <button class="btn" id="historyClose" style="background:transparent;border:1px solid #d4c8b8;">关闭</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay recharge-modal" id="rechargeModal">
+        <div class="modal-box">
+            <div class="modal-icon">💰</div>
+            <div class="modal-title">充值电池</div>
+            <div class="modal-desc" style="font-size:14px;color:#7a6a5a;">手动输入（不可粘贴）</div>
+            <div class="recharge-options">
+                <div class="recharge-item">
+                    <div class="item-header"><span>🔋 +180</span><span class="price">免费</span></div>
+                    <div class="input-row">
+                        <input type="text" class="recharge-input" placeholder="输入『湖里真棒』" autocomplete="off" spellcheck="false" data-expected="湖里真棒" data-amount="180" />
+                        <button class="btn-confirm-recharge">确认</button>
+                    </div>
+                    <div class="hint">请输入：湖里真棒</div>
+                </div>
+                <div class="recharge-item">
+                    <div class="item-header"><span>🔋 +1980</span><span class="price">免费</span></div>
+                    <div class="input-row">
+                        <input type="text" class="recharge-input" placeholder="输入『湖里哥哥最好了』" autocomplete="off" spellcheck="false" data-expected="湖里哥哥最好了" data-amount="1980" />
+                        <button class="btn-confirm-recharge">确认</button>
+                    </div>
+                    <div class="hint">请输入：湖里哥哥最好了</div>
+                </div>
+            </div>
+
+            <div class="egg-row">
+                <div class="input-row">
+                    <input type="text" id="eggInput" autocomplete="off" spellcheck="false" style="flex:1; padding:6px 12px; border-radius:30px; border:1px solid #d4c8b8; font-size:14px; font-family:inherit; background:rgba(255,250,240,0.6); outline:none;" />
+                    <button class="btn-egg" id="eggBtn" style="padding:6px 16px; border-radius:30px; border:none; background:#d4c0aa; font-weight:600; font-size:14px; cursor:pointer; border:1px solid #b8a088; font-family:inherit; min-width:44px;">·</button>
+                </div>
+            </div>
+
+            <div style="margin-top:4px;">
+                <button class="recharge-close-btn" id="rechargeClose">关闭</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ============================================================
+        //  山海工坊 · 修复盈亏计数（无限模式下 totalSpent 依然累加）
+        // ============================================================
+
+        const MATERIALS = [
+            { id: 'rice', name: '稻田', emoji: '🌾' },
+            { id: 'barn', name: '谷仓', emoji: '🏠' },
+            { id: 'boat', name: '木船', emoji: '⛵' },
+            { id: 'bridge', name: '石桥', emoji: '🌉' },
+            { id: 'well', name: '水井', emoji: '🪣' },
+            { id: 'flute', name: '渔笛', emoji: '🎵' },
+            { id: 'basket', name: '竹篮', emoji: '🧺' }
+        ];
+
+        const GIFT_CONFIG = {
+            1: { value: 50, name: '浪花一现', emoji: '🌊', replaceCost: 50 },
+            2: { value: 120, name: '纸船渡海', emoji: '⛵', replaceCost: 28 },
+            3: { value: 250, name: '海图一角', emoji: '🗺️', replaceCost: 78 },
+            4: { value: 800, name: '城市倒影', emoji: '🌃', replaceCost: 315 },
+            5: { value: 3000, name: '护城大王', emoji: '🏯', replaceCost: 3860 },
+            6: { value: 30000, name: '山河入画', emoji: '🏞️', replaceCost: Infinity }
+        };
+
+        let state = {
+            slots: Array(6).fill(null),
+            battery: 900,
+            totalSpent: 0,
+            isAnimating: false,
+            history: [],
+            unlimitedBattery: false,
+        };
+
+        // DOM
+        const hexContainer = document.getElementById('hexContainer');
+        const batteryDisplay = document.getElementById('batteryDisplay');
+        const logMsg = document.getElementById('logMsg');
+        const logArea = document.getElementById('logArea');
+        const btnDrawOne = document.getElementById('btnDrawOne');
+        const btnDrawSix = document.getElementById('btnDrawSix');
+        const btnSynth = document.getElementById('btnSynth');
+        const carouselEl = document.getElementById('carousel');
+        const giftEmoji = document.getElementById('giftEmoji');
+        const giftName = document.getElementById('giftName');
+        const giftValue = document.getElementById('giftValue');
+
+        const summonModal = document.getElementById('summonModal');
+        const summonDesc = document.getElementById('summonDesc');
+        const summonConfirm = document.getElementById('summonConfirm');
+        const summonCancel = document.getElementById('summonCancel');
+        const replaceModal = document.getElementById('replaceModal');
+        const replaceSlotName = document.getElementById('replaceSlotName');
+        const replaceCostDisplay = document.getElementById('replaceCostDisplay');
+        const replaceConfirm = document.getElementById('replaceConfirm');
+        const replaceCancel = document.getElementById('replaceCancel');
+        const synthConfirmModal = document.getElementById('synthConfirmModal');
+        const synthPreviewEmoji = document.getElementById('synthPreviewEmoji');
+        const synthPreviewName = document.getElementById('synthPreviewName');
+        const synthPreviewValue = document.getElementById('synthPreviewValue');
+        const synthPreviewProfit = document.getElementById('synthPreviewProfit');
+        const synthConfirmOk = document.getElementById('synthConfirmOk');
+        const synthConfirmCancel = document.getElementById('synthConfirmCancel');
+        const resultModal = document.getElementById('resultModal');
+        const resultEmoji = document.getElementById('resultEmoji');
+        const resultName = document.getElementById('resultName');
+        const resultValue = document.getElementById('resultValue');
+        const resultProfit = document.getElementById('resultProfit');
+        const resultClose = document.getElementById('resultClose');
+        const historyModal = document.getElementById('historyModal');
+        const historyList = document.getElementById('historyList');
+        const historyClear = document.getElementById('historyClear');
+        const historyClose = document.getElementById('historyClose');
+        const btnHistoryOpen = document.getElementById('btnHistoryOpen');
+        const rechargeModal = document.getElementById('rechargeModal');
+        const btnRechargeOpen = document.getElementById('btnRechargeOpen');
+        const rechargeClose = document.getElementById('rechargeClose');
+        const rechargeInputs = document.querySelectorAll('.recharge-input');
+        const rechargeConfirmBtns = document.querySelectorAll('.btn-confirm-recharge');
+
+        const eggInput = document.getElementById('eggInput');
+        const eggBtn = document.getElementById('eggBtn');
+
+        const mergeOverlay = document.getElementById('mergeOverlay');
+        const mergeBurst = document.getElementById('mergeBurst');
+        const confettiContainer = document.getElementById('confettiContainer');
+        const fireworksCanvas = document.getElementById('fireworksCanvas');
+        const fwCtx = fireworksCanvas.getContext('2d');
+
+        // ---- 辅助 ----
+        function randomMaterial() { return MATERIALS[Math.floor(Math.random() * MATERIALS.length)]; }
+
+        function calcN(slots) {
+            const filled = slots.filter(s => s !== null);
+            if (filled.length === 0) return 0;
+            const countMap = {};
+            filled.forEach(s => { countMap[s.id] = (countMap[s.id] || 0) + 1; });
+            let maxN = 0;
+            for (const key in countMap) {
+                if (countMap[key] > maxN) maxN = countMap[key];
+            }
+            return maxN;
+        }
+
+        function getGiftName(n) { return GIFT_CONFIG[n] ? GIFT_CONFIG[n].name : '—'; }
+
+        function getGiftValue(n) { return GIFT_CONFIG[n] ? GIFT_CONFIG[n].value : 0; }
+
+        function getGiftEmoji(n) { return GIFT_CONFIG[n] ? GIFT_CONFIG[n].emoji : '🎁'; }
+
+        function getReplaceCost(n) { return GIFT_CONFIG[n] ? GIFT_CONFIG[n].replaceCost : Infinity; }
+
+        // ---- 轮播 ----
+        let carouselInterval = null;
+        let currentCarouselN = 1;
+
+        function startCarousel() {
+            if (carouselInterval) clearInterval(carouselInterval);
+            currentCarouselN = 1;
+            updateCarousel(currentCarouselN);
+            carouselInterval = setInterval(() => {
+                currentCarouselN = (currentCarouselN % 6) + 1;
+                updateCarousel(currentCarouselN);
+            }, 2200);
+        }
+
+        function updateCarousel(n) {
+            const name = getGiftName(n);
+            const val = getGiftValue(n);
+            const emoji = getGiftEmoji(n);
+            carouselEl.classList.remove('fade-in');
+            carouselEl.classList.add('fade-out');
+            setTimeout(() => {
+                giftEmoji.textContent = emoji;
+                giftName.textContent = name;
+                giftValue.textContent = val + ' 电池';
+                carouselEl.classList.remove('fade-out');
+                carouselEl.classList.add('fade-in');
+            }, 250);
+        }
+
+        function stopCarousel() {
+            if (carouselInterval) { clearInterval(carouselInterval);
+                carouselInterval = null; }
+        }
+
+        // ---- 正六边形顶点定位 ----
+        function positionSlots() {
+            const container = hexContainer;
+            const w = container.clientWidth;
+            const h = container.clientHeight || w;
+            if (w === 0 || h === 0) {
+                const slots = container.querySelectorAll('.slot');
+                slots.forEach(slot => {
+                    slot.style.left = '50%';
+                    slot.style.top = '50%';
+                });
+                return;
+            }
+            const cx = w / 2;
+            const cy = h / 2;
+            const radius = Math.min(w, h) * 0.38;
+            const slots = container.querySelectorAll('.slot');
+            const startAngle = -Math.PI / 2;
+            for (let i = 0; i < slots.length; i++) {
+                const angle = startAngle + i * Math.PI / 3;
+                const x = cx + radius * Math.cos(angle);
+                const y = cy + radius * Math.sin(angle);
+                slots[i].style.left = x + 'px';
+                slots[i].style.top = y + 'px';
+            }
+        }
+
+        // ---- 渲染槽位 ----
+        function renderSlots() {
+            hexContainer.querySelectorAll('.slot').forEach(el => el.remove());
+            for (let i = 0; i < 6; i++) {
+                const data = state.slots[i];
+                const div = document.createElement('div');
+                div.className = 'slot';
+                div.dataset.index = i;
+                if (data === null) {
+                    div.classList.add('empty');
+                    div.textContent = '+';
+                    div.addEventListener('click', () => handleSummonClick(i));
+                } else {
+                    div.classList.add('filled');
+                    const icon = document.createElement('span');
+                    icon.className = 'slot-icon';
+                    icon.textContent = data.emoji;
+                    div.appendChild(icon);
+                    const name = document.createElement('span');
+                    name.className = 'slot-name';
+                    name.textContent = data.name;
+                    div.appendChild(name);
+                    div.addEventListener('click', () => handleReplaceClick(i));
+                }
+                hexContainer.appendChild(div);
+            }
+            requestAnimationFrame(() => {
+                positionSlots();
+                setTimeout(positionSlots, 50);
+            });
+        }
+
+        // ---- 更新UI ----
+        function updateUI() {
+            batteryDisplay.textContent = state.battery;
+            renderSlots();
+            const filled = state.slots.filter(s => s !== null);
+            const isFull = (filled.length === 6);
+
+            if (isFull) {
+                btnDrawOne.style.display = 'none';
+                btnDrawSix.style.display = 'none';
+                btnSynth.classList.add('active');
+                stopCarousel();
+                const n = calcN(state.slots);
+                const name = getGiftName(n);
+                const val = getGiftValue(n);
+                const emoji = getGiftEmoji(n);
+                giftEmoji.textContent = emoji;
+                giftName.textContent = name;
+                giftValue.textContent = val + ' 电池';
+                carouselEl.classList.remove('fade-out', 'fade-in');
+                btnSynth.textContent = `✨ 合成 (${name} +${val})`;
+            } else {
+                btnDrawOne.style.display = 'flex';
+                btnDrawSix.style.display = 'flex';
+                btnSynth.classList.remove('active');
+                if (!carouselInterval) startCarousel();
+            }
+        }
+
+        // ---- 交互（修复：无论是否无限，totalSpent 都累加） ----
+        function handleSummonClick(index) {
+            if (state.isAnimating) return;
+            if (state.slots[index] !== null) return;
+            if (!state.unlimitedBattery && state.battery < 30) {
+                setLog('电池不足！需要 30 电池', 'error');
+                return;
+            }
+            summonDesc.innerHTML = '在此槽位召唤随机素材，消耗 <strong>30 电池</strong>';
+            summonModal.dataset.mode = 'single';
+            summonModal.dataset.index = index;
+            summonModal.classList.add('active');
+        }
+
+        function executeSummon() {
+            const mode = summonModal.dataset.mode;
+            if (mode === 'single') {
+                const index = parseInt(summonModal.dataset.index);
+                if (isNaN(index) || state.slots[index] !== null) { summonModal.classList.remove('active'); return; }
+                if (!state.unlimitedBattery && state.battery < 30) {
+                    setLog('电池不足！需要 30 电池', 'error');
+                    summonModal.classList.remove('active');
+                    return;
+                }
+                state.isAnimating = true;
+                // ★ 修复：无论是否无限，都累加消耗
+                state.totalSpent += 30;
+                if (!state.unlimitedBattery) {
+                    state.battery -= 30;
+                }
+                const mat = randomMaterial();
+                state.slots[index] = { ...mat };
+                setLog(`✨ 获得「${mat.emoji} ${mat.name}」`, 'info');
+                updateUI();
+                state.isAnimating = false;
+                summonModal.classList.remove('active');
+                checkFull();
+            } else if (mode === 'batch_one' || mode === 'batch_six') {
+                executeBatchSummon();
+            }
+        }
+
+        function executeBatchSummon() {
+            const mode = summonModal.dataset.mode;
+            if (mode === 'batch_one') {
+                const emptyIndices = state.slots.map((s, i) => s === null ? i : null).filter(i => i !== null);
+                if (emptyIndices.length === 0) { summonModal.classList.remove('active'); return; }
+                if (!state.unlimitedBattery && state.battery < 30) {
+                    summonModal.classList.remove('active');
+                    return;
+                }
+                state.isAnimating = true;
+                state.totalSpent += 30;
+                if (!state.unlimitedBattery) {
+                    state.battery -= 30;
+                }
+                const idx = emptyIndices[Math.floor(Math.random() * emptyIndices.length)];
+                const mat = randomMaterial();
+                state.slots[idx] = { ...mat };
+                setLog(`✨ 获得「${mat.emoji} ${mat.name}」`, 'info');
+                updateUI();
+                state.isAnimating = false;
+                summonModal.classList.remove('active');
+                checkFull();
+            } else if (mode === 'batch_six') {
+                const emptyIndices = state.slots.map((s, i) => s === null ? i : null).filter(i => i !== null);
+                if (emptyIndices.length === 0) { summonModal.classList.remove('active'); return; }
+                const cost = emptyIndices.length * 30;
+                if (!state.unlimitedBattery && state.battery < cost) {
+                    summonModal.classList.remove('active');
+                    return;
+                }
+                state.isAnimating = true;
+                state.totalSpent += cost;
+                if (!state.unlimitedBattery) {
+                    state.battery -= cost;
+                }
+                emptyIndices.forEach(idx => {
+                    const mat = randomMaterial();
+                    state.slots[idx] = { ...mat };
+                });
+                setLog(`🌟 召唤了 ${emptyIndices.length} 个素材`, 'success');
+                updateUI();
+                state.isAnimating = false;
+                summonModal.classList.remove('active');
+                checkFull();
+            }
+        }
+
+        function handleReplaceClick(index) {
+            if (state.isAnimating) return;
+            const slot = state.slots[index];
+            if (slot === null) return;
+            const n = calcN(state.slots);
+            const cost = getReplaceCost(n);
+            if (cost === Infinity) { setLog('当前组合无需替换，直接合成吧！', 'info'); return; }
+            if (!state.unlimitedBattery && state.battery < cost) {
+                setLog(`电池不足！替换需要 ${cost} 电池`, 'error');
+                return;
+            }
+            replaceSlotName.textContent = `${slot.emoji} ${slot.name}`;
+            replaceCostDisplay.textContent = `🔋 ${cost} 电池`;
+            replaceModal.dataset.index = index;
+            replaceModal.classList.add('active');
+        }
+
+        function executeReplace() {
+            const index = parseInt(replaceModal.dataset.index);
+            if (isNaN(index) || state.slots[index] === null) { replaceModal.classList.remove('active'); return; }
+            const n = calcN(state.slots);
+            const cost = getReplaceCost(n);
+            if (cost === Infinity) { replaceModal.classList.remove('active'); return; }
+            if (!state.unlimitedBattery && state.battery < cost) {
+                replaceModal.classList.remove('active');
+                return;
+            }
+            state.isAnimating = true;
+            state.totalSpent += cost;
+            if (!state.unlimitedBattery) {
+                state.battery -= cost;
+            }
+            const newMat = randomMaterial();
+            state.slots[index] = { ...newMat };
+            setLog(`🔄 替换为「${newMat.emoji} ${newMat.name}」`, 'info');
+            updateUI();
+            state.isAnimating = false;
+            replaceModal.classList.remove('active');
+        }
+
+        // ---- 合成 ----
+        function showSynthConfirm() {
+            if (state.isAnimating) return;
+            const filled = state.slots.filter(s => s !== null);
+            if (filled.length !== 6) { setLog('需要集齐 6 份素材！', 'error'); return; }
+            const n = calcN(state.slots);
+            const val = getGiftValue(n);
+            const name = getGiftName(n);
+            const emoji = getGiftEmoji(n);
+            if (val === 0) { setLog('无法合成有效礼物', 'error'); return; }
+
+            const cost = state.totalSpent;
+            const profit = val - cost;
+
+            synthPreviewEmoji.textContent = emoji;
+            synthPreviewName.textContent = name;
+            synthPreviewValue.textContent = `+${val} 电池`;
+            const profitText = profit >= 0 ? `赚了 +${profit}` : `亏了 ${profit}`;
+            synthPreviewProfit.textContent = `⚖️ ${profitText}`;
+            synthPreviewProfit.className = 'gift-profit ' + (profit > 0 ? 'profit' : profit < 0 ? 'loss' : 'equal');
+
+            synthConfirmModal.dataset.n = n;
+            synthConfirmModal.dataset.val = val;
+            synthConfirmModal.dataset.name = name;
+            synthConfirmModal.dataset.emoji = emoji;
+            synthConfirmModal.dataset.cost = cost;
+            synthConfirmModal.dataset.profit = profit;
+
+            synthConfirmModal.classList.add('active');
+        }
+
+        function executeSynthWithAnimation() {
+            if (state.isAnimating) return;
+            state.isAnimating = true;
+
+            const val = parseInt(synthConfirmModal.dataset.val);
+            const name = synthConfirmModal.dataset.name;
+            const emoji = synthConfirmModal.dataset.emoji;
+            const cost = parseInt(synthConfirmModal.dataset.cost);
+            const profit = parseInt(synthConfirmModal.dataset.profit);
+
+            synthConfirmModal.classList.remove('active');
+
+            const filledSlots = document.querySelectorAll('.slot.filled');
+            const slotRects = [];
+            filledSlots.forEach(slot => {
+                const rect = slot.getBoundingClientRect();
+                const iconEl = slot.querySelector('.slot-icon');
+                if (iconEl) {
+                    slotRects.push({
+                        x: rect.left + rect.width / 2,
+                        y: rect.top + rect.height / 2,
+                        emoji: iconEl.textContent
+                    });
+                }
+            });
+
+            state.slots = state.slots.map(() => null);
+
+            const centerX = window.innerWidth / 2;
+            const centerY = window.innerHeight / 2;
+            mergeOverlay.classList.add('active');
+
+            const particles = [];
+            slotRects.forEach((rect, i) => {
+                const p = document.createElement('div');
+                p.className = 'merge-particle';
+                p.textContent = rect.emoji;
+                p.style.left = (rect.x - 25) + 'px';
+                p.style.top = (rect.y - 25) + 'px';
+                p.style.transitionDelay = (i * 0.05) + 's';
+                mergeOverlay.appendChild(p);
+                particles.push(p);
+            });
+
+            requestAnimationFrame(() => {
+                particles.forEach(p => {
+                    const r = p.getBoundingClientRect();
+                    const dx = centerX - (r.left + 25);
+                    const dy = centerY - (r.top + 25);
+                    p.style.setProperty('--tx', dx + 'px');
+                    p.style.setProperty('--ty', dy + 'px');
+                    p.classList.add('fly');
+                });
+            });
+
+            setTimeout(() => {
+                mergeBurst.classList.remove('active');
+                void mergeBurst.offsetWidth;
+                mergeBurst.classList.add('active');
+            }, 600);
+
+            setTimeout(() => {
+                particles.forEach(p => p.remove());
+                mergeOverlay.classList.remove('active');
+                launchCelebration(emoji, name, val, cost, profit);
+            }, 1400);
+
+            state.history.push({
+                time: new Date().toLocaleString(),
+                name: name,
+                value: val,
+                cost: cost,
+                profit: profit
+            });
+            state.totalSpent = 0;
+        }
+
+        function launchCelebration(emoji, name, val, cost, profit) {
+            launchConfetti();
+            launchFireworks();
+            setTimeout(() => {
+                resultEmoji.textContent = emoji;
+                resultName.textContent = name;
+                resultValue.textContent = `+${val} 电池（已送出）`;
+                const profitText = profit >= 0 ? `赚了 +${profit}` : `亏了 ${profit}`;
+                resultProfit.textContent = `⚖️ ${profitText}`;
+                resultProfit.className = 'gift-profit ' + (profit > 0 ? 'profit' : profit < 0 ? 'loss' : 'equal');
+                resultModal.classList.add('active');
+                setLog(`🎉 合成「${name}」价值 ${val} 电池已送出，${profitText}`, 'gift');
+                updateUI();
+                startCarousel();
+                state.isAnimating = false;
+            }, 800);
+        }
+
+        function launchConfetti() {
+            const container = confettiContainer;
+            container.innerHTML = '';
+            const colors = ['#ff6b6b', '#ffd93d', '#6bcb77', '#4d96ff', '#ff6fb7', '#ff9f43', '#a29bfe', '#fd79a8', '#00b894'];
+            const emojis = ['🎉', '✨', '🎊', '⭐', '🌟', '💫', '🎆', '🏮'];
+            for (let i = 0; i < 60; i++) {
+                const el = document.createElement('div');
+                el.className = 'confetti';
+                const isEmoji = Math.random() > 0.5;
+                if (isEmoji) {
+                    el.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+                    el.style.fontSize = (14 + Math.random() * 20) + 'px';
+                    el.style.width = 'auto';
+                    el.style.height = 'auto';
+                    el.style.background = 'transparent';
+                    el.style.borderRadius = '0';
+                } else {
+                    el.style.width = (6 + Math.random() * 10) + 'px';
+                    el.style.height = (6 + Math.random() * 10) + 'px';
+                    el.style.background = colors[Math.floor(Math.random() * colors.length)];
+                    el.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+                }
+                el.style.left = (Math.random() * 100) + '%';
+                el.style.top = '-10px';
+                el.style.animationDuration = (2 + Math.random() * 3) + 's';
+                el.style.animationDelay = (Math.random() * 1.5) + 's';
+                el.style.transform = 'rotate(' + (Math.random() * 360) + 'deg)';
+                container.appendChild(el);
+            }
+            setTimeout(() => { container.innerHTML = ''; }, 5000);
+        }
+
+        let fwParticles = [];
+        let fwAnimationId = null;
+        let fwRunning = false;
+
+        function launchFireworks() {
+            const canvas = fireworksCanvas;
+            const ctx = fwCtx;
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            canvas.classList.add('active');
+
+            const colors = ['#ff6b6b', '#ffd93d', '#6bcb77', '#4d96ff', '#ff6fb7', '#ff9f43', '#a29bfe', '#fd79a8', '#00b894'];
+
+            for (let burst = 0; burst < 3; burst++) {
+                setTimeout(() => {
+                    const cx = window.innerWidth * (0.2 + Math.random() * 0.6);
+                    const cy = window.innerHeight * (0.2 + Math.random() * 0.5);
+                    const color = colors[Math.floor(Math.random() * colors.length)];
+                    const numP = 50 + Math.floor(Math.random() * 40);
+                    for (let i = 0; i < numP; i++) {
+                        const angle = Math.random() * 2 * Math.PI;
+                        const speed = 2 + Math.random() * 5;
+                        const size = 2 + Math.random() * 4;
+                        const life = 40 + Math.floor(Math.random() * 30);
+                        fwParticles.push({
+                            x: cx,
+                            y: cy,
+                            vx: Math.cos(angle) * speed,
+                            vy: Math.sin(angle) * speed,
+                            size: size,
+                            color: color,
+                            life: life,
+                            maxLife: life,
+                            alpha: 1,
+                            gravity: 0.05
+                        });
+                    }
+                    if (!fwRunning) {
+                        fwRunning = true;
+                        animateFireworks();
+                    }
+                }, burst * 400);
+            }
+
+            setTimeout(() => {
+                fwRunning = false;
+                if (fwAnimationId) { cancelAnimationFrame(fwAnimationId);
+                    fwAnimationId = null; }
+                canvas.classList.remove('active');
+                fwParticles = [];
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+            }, 5000);
+        }
+
+        function animateFireworks() {
+            if (!fwRunning) return;
+            const canvas = fireworksCanvas;
+            const ctx = fwCtx;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            for (let i = fwParticles.length - 1; i >= 0; i--) {
+                const p = fwParticles[i];
+                p.x += p.vx;
+                p.y += p.vy;
+                p.vy += p.gravity;
+                p.vx *= 0.98;
+                p.vy *= 0.98;
+                p.life--;
+                p.alpha = p.life / p.maxLife;
+                if (p.life <= 0 || p.alpha <= 0) {
+                    fwParticles.splice(i, 1);
+                    continue;
+                }
+                ctx.save();
+                ctx.globalAlpha = p.alpha;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size * p.alpha, 0, Math.PI * 2);
+                ctx.fillStyle = p.color;
+                ctx.shadowColor = p.color;
+                ctx.shadowBlur = 15;
+                ctx.fill();
+                ctx.restore();
+            }
+
+            if (fwParticles.length > 0) {
+                fwAnimationId = requestAnimationFrame(animateFireworks);
+            } else {
+                fwRunning = false;
+                canvas.classList.remove('active');
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+            }
+        }
+
+        window.addEventListener('resize', () => {
+            const canvas = fireworksCanvas;
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+
+        function closeResult() { resultModal.classList.remove('active'); }
+
+        function checkFull() {
+            const filled = state.slots.filter(s => s !== null);
+            if (filled.length === 6) {
+                const n = calcN(state.slots);
+                setLog(`🎯 槽位已满！可合成「${getGiftName(n)}」+${getGiftValue(n)} 电池`, 'success');
+            }
+        }
+
+        // ---- 召唤按钮 ----
+        function showDrawOneConfirm() {
+            if (state.isAnimating) return;
+            const emptyIndices = state.slots.map((s, i) => s === null ? i : null).filter(i => i !== null);
+            if (emptyIndices.length === 0) { setLog('槽位已满，请合成', 'error'); return; }
+            if (!state.unlimitedBattery && state.battery < 30) {
+                setLog('电池不足！需要 30 电池', 'error');
+                return;
+            }
+            summonDesc.innerHTML = '随机召唤一个素材填充空槽位，消耗 <strong>30 电池</strong>';
+            summonModal.dataset.mode = 'batch_one';
+            summonModal.dataset.index = 'batch';
+            summonModal.classList.add('active');
+        }
+
+        function showDrawSixConfirm() {
+            if (state.isAnimating) return;
+            const emptyIndices = state.slots.map((s, i) => s === null ? i : null).filter(i => i !== null);
+            if (emptyIndices.length === 0) { setLog('槽位已满，无需召唤', 'error'); return; }
+            const cost = emptyIndices.length * 30;
+            if (!state.unlimitedBattery && state.battery < cost) {
+                setLog(`电池不足！需要 ${cost} 电池`, 'error');
+                return;
+            }
+            summonDesc.innerHTML = `召唤 ${emptyIndices.length} 个随机素材填充所有空槽位，消耗 <strong>${cost} 电池</strong>`;
+            summonModal.dataset.mode = 'batch_six';
+            summonModal.dataset.index = 'batch';
+            summonModal.classList.add('active');
+        }
+
+        // ---- 历史 ----
+        function renderHistory() {
+            historyList.innerHTML = '';
+            if (state.history.length === 0) {
+                historyList.innerHTML = '<div class="history-empty">暂无合成记录</div>';
+                return;
+            }
+            const reversed = [...state.history].reverse();
+            reversed.forEach(entry => {
+                const div = document.createElement('div');
+                div.className = 'history-item';
+                const profitText = entry.profit >= 0 ? `+${entry.profit}` : `${entry.profit}`;
+                const profitClass = entry.profit > 0 ? 'profit' : entry.profit < 0 ? 'loss' : 'equal';
+                div.innerHTML = `
+                    <span class="h-time">${entry.time}</span>
+                    <span class="h-gift">${entry.name}</span>
+                    <span class="h-value">+${entry.value}</span>
+                    <span class="h-cost">消耗${entry.cost}</span>
+                    <span class="h-profit ${profitClass}">${profitText}</span>
+                `;
+                historyList.appendChild(div);
+            });
+        }
+
+        function openHistory() { renderHistory();
+            historyModal.classList.add('active'); }
+
+        function clearHistory() {
+            if (state.history.length === 0) return;
+            if (confirm('确定清空所有历史记录吗？')) {
+                state.history = [];
+                renderHistory();
+                setLog('📜 历史已清空', 'info');
+            }
+        }
+
+        function closeHistory() { historyModal.classList.remove('active'); }
+
+        // ---- 日志 ----
+        function setLog(msg, type = 'info') {
+            const el = logMsg;
+            el.textContent = msg;
+            el.className = 'log-msg ' + type;
+            const emojiEl = logArea.querySelector('.log-emoji');
+            if (type === 'gift') emojiEl.textContent = '🎉';
+            else if (type === 'error') emojiEl.textContent = '⚠️';
+            else if (type === 'success') emojiEl.textContent = '✅';
+            else emojiEl.textContent = '📜';
+        }
+
+        // ---- 充值 ----
+        function handleRecharge(inputEl) {
+            const expected = inputEl.dataset.expected;
+            const amount = parseInt(inputEl.dataset.amount, 10);
+            const val = inputEl.value.trim();
+            if (val === expected) {
+                state.battery += amount;
+                updateUI();
+                setLog(`✅ 充值成功！+${amount} 电池`, 'success');
+                inputEl.value = '';
+                rechargeModal.classList.remove('active');
+            } else {
+                setLog(`❌ 输入文字不符，请重新输入`, 'error');
+                inputEl.focus();
+                inputEl.select();
+            }
+        }
+
+        // ---- 彩蛋 ----
+        function handleEgg() {
+            const val = eggInput.value.trim();
+            if (val === '关注林绾-唱见连谢谢喵') {
+                state.unlimitedBattery = true;
+                eggInput.value = '';
+            } else {
+                eggInput.value = '';
+            }
+        }
+
+        function preventPasteAndContext(elem) {
+            elem.addEventListener('paste', (e) => { e.preventDefault(); });
+            elem.addEventListener('contextmenu', (e) => e.preventDefault());
+            elem.addEventListener('drop', (e) => e.preventDefault());
+            elem.addEventListener('dragenter', (e) => e.preventDefault());
+        }
+
+        // ---- 事件绑定 ----
+        eggBtn.addEventListener('click', handleEgg);
+        eggInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                handleEgg();
+            }
+        });
+        preventPasteAndContext(eggInput);
+
+        summonConfirm.addEventListener('click', executeSummon);
+        summonCancel.addEventListener('click', () => {
+            summonModal.classList.remove('active');
+            summonDesc.innerHTML = '在此槽位召唤随机素材，消耗 <strong>30 电池</strong>';
+            summonModal.dataset.mode = '';
+        });
+        summonModal.addEventListener('click', (e) => {
+            if (e.target === summonModal) {
+                summonModal.classList.remove('active');
+                summonDesc.innerHTML = '在此槽位召唤随机素材，消耗 <strong>30 电池</strong>';
+                summonModal.dataset.mode = '';
+            }
+        });
+
+        replaceConfirm.addEventListener('click', executeReplace);
+        replaceCancel.addEventListener('click', () => { replaceModal.classList.remove('active'); });
+        replaceModal.addEventListener('click', (e) => { if (e.target === replaceModal) replaceModal.classList.remove('active'); });
+
+        synthConfirmOk.addEventListener('click', executeSynthWithAnimation);
+        synthConfirmCancel.addEventListener('click', () => { synthConfirmModal.classList.remove('active'); });
+        synthConfirmModal.addEventListener('click', (e) => {
+            if (e.target === synthConfirmModal) synthConfirmModal.classList.remove('active');
+        });
+
+        resultClose.addEventListener('click', closeResult);
+        resultModal.addEventListener('click', (e) => { if (e.target === resultModal) closeResult(); });
+
+        historyClose.addEventListener('click', closeHistory);
+        historyClear.addEventListener('click', clearHistory);
+        btnHistoryOpen.addEventListener('click', openHistory);
+        historyModal.addEventListener('click', (e) => { if (e.target === historyModal) closeHistory(); });
+
+        btnRechargeOpen.addEventListener('click', () => rechargeModal.classList.add('active'));
+        rechargeClose.addEventListener('click', () => rechargeModal.classList.remove('active'));
+        rechargeModal.addEventListener('click', (e) => { if (e.target === rechargeModal) rechargeModal.classList.remove('active'); });
+        rechargeInputs.forEach(inp => preventPasteAndContext(inp));
+        rechargeConfirmBtns.forEach((btn, idx) => {
+            const input = rechargeInputs[idx];
+            btn.addEventListener('click', (e) => { e.stopPropagation();
+                handleRecharge(input); });
+            input.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault();
+                    handleRecharge(input); } });
+        });
+
+        btnDrawOne.addEventListener('click', showDrawOneConfirm);
+        btnDrawSix.addEventListener('click', showDrawSixConfirm);
+        btnSynth.addEventListener('click', showSynthConfirm);
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === '1') btnDrawOne.click();
+            if (e.key === '2') btnDrawSix.click();
+            if (e.key === 's' || e.key === 'S') {
+                if (btnSynth.classList.contains('active')) btnSynth.click();
+            }
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.modal-overlay.active').forEach(m => m.classList.remove('active'));
+            }
+        });
+
+        let resizeTimer;
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(() => {
+                positionSlots();
+            }, 150);
+        });
+
+        // ---- 初始化 ----
+        function init() {
+            state.slots = Array(6).fill(null);
+            state.battery = 900;
+            state.totalSpent = 0;
+            state.history = [];
+            state.unlimitedBattery = false;
+            updateUI();
+            startCarousel();
+            setLog('🏮 点击「召唤」或槽位开始炼化', 'info');
+            setTimeout(positionSlots, 100);
+            setTimeout(positionSlots, 300);
+            setTimeout(positionSlots, 600);
+        }
+
+        if (document.readyState === 'complete') {
+            init();
+        } else {
+            window.addEventListener('load', init);
+        }
+
+        console.log('🏮 山海工坊 · 盈亏计数已修复');
+        console.log('  无限模式下总消耗依然累加，盈亏准确');
+        console.log('  快捷键: [1] 召唤一个  [2] 召唤六个  [S] 合成');
+    </script>
+</body>
+</html>
